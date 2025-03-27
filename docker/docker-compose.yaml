@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:14
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: ../
+      dockerfile: docker/songs.Dockerfile
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      SERVING_PORT: 8080
+      API_ENDPOINT: http://localhost:8081/info
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

@@ -1,0 +1,6 @@
+# yaml-language-server: ...
+package: client
+generate:
+  models: true
+  client: true
+output: internal/api/client.gen.go

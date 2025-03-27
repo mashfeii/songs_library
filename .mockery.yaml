@@ -1,0 +1,15 @@
+with-expecter: true
+filename: "{{.InterfaceName | snakecase}}.go"
+mockname: "{{.InterfaceName | firstUpper}}Mock"
+outpkg: mocks
+issue-845-fix: true
+resolve-type-alias: false
+disable-version-string: true
+dir: "internal/mocks/"
+packages:
+  github.com/mashfeii/songs_library/internal/domain:
+    interfaces:
+      SongsRepository:
+  github.com/mashfeii/songs_library/internal/application:
+    interfaces:
+      SongsServiceInterface:
