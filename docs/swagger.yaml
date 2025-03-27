@@ -1,0 +1,258 @@
+definitions:
+  domain.AddSongRequest:
+    properties:
+      group:
+        type: string
+      song:
+        type: string
+    type: object
+  domain.AddSongResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  domain.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      details:
+        type: string
+      message:
+        type: string
+    type: object
+  domain.GetSongVersesResponse:
+    properties:
+      page:
+        type: integer
+      size:
+        type: integer
+      verses:
+        items:
+          type: string
+        type: array
+    type: object
+  domain.Song:
+    properties:
+      group:
+        type: string
+      id:
+        type: integer
+      link:
+        type: string
+      release_date:
+        type: string
+      song:
+        type: string
+      text:
+        type: string
+    type: object
+  domain.UpdateSongRequest:
+    properties:
+      group:
+        type: string
+      link:
+        type: string
+      releaseDate:
+        type: string
+      song:
+        type: string
+      text:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /songs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve list of songs with optional filters and pagination
+      parameters:
+      - description: Filter by group
+        in: query
+        name: group
+        type: string
+      - description: Filter by song
+        in: query
+        name: song
+        type: string
+      - description: Filter by text
+        in: query
+        name: song
+        type: string
+      - description: Filter by link
+        in: query
+        name: song
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Songs successfully retrieved
+          schema:
+            items:
+              $ref: '#/definitions/domain.Song'
+            type: array
+        "404":
+          description: No songs found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Get list of songs
+      tags:
+      - songs
+    post:
+      consumes:
+      - application/json
+      description: Add a song
+      parameters:
+      - description: Song name and group
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/domain.AddSongRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Song ID
+          schema:
+            $ref: '#/definitions/domain.AddSongResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Add a song
+      tags:
+      - songs
+  /songs/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a song by ID
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Song successfully removed
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Song not found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Delete a song
+      tags:
+      - songs
+    put:
+      consumes:
+      - application/json
+      description: Update a song by ID
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Song data
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateSongRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated song
+          schema:
+            $ref: '#/definitions/domain.Song'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: Song not found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Update a song
+      tags:
+      - songs
+  /songs/{id}/verses:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated verses of a song by ID
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Verses successfully retrieved
+          schema:
+            $ref: '#/definitions/domain.GetSongVersesResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "404":
+          description: No verses found
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.ErrorResponse'
+      summary: Get song verses with pagination
+      tags:
+      - songs
+swagger: "2.0"
