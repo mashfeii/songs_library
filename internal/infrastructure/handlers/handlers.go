@@ -30,33 +30,31 @@ import (
 // @Router /songs [get]
 func GetSongs(service application.SongsServiceInterface) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		logrus.WithFields(logrus.Fields{
+			"request_method": c.Request.Method,
+			"request_path":   c.Request.URL.Path,
+			"request_query":  c.Request.URL.Query(),
+		}).Debug("Request received")
+
 		page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 		size, _ := strconv.Atoi(c.DefaultQuery("size", "10"))
 
 		if page < 1 {
-			logrus.WithFields(logrus.Fields{
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
-			}).Warn("page is less than 1, setting to 1")
+			logrus.Warn("page is less than 1, setting to 1")
 
 			page = 1
 		}
 
 		if size < 1 {
-			logrus.WithFields(logrus.Fields{
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
-			}).Warn("size is less than 1, setting to 10")
+			logrus.Warn("size is less than 1, setting to 10")
 
 			size = 10
 		}
 
-		if _, err := time.Parse("2006-01-02", c.Query("releaseDate")); err != nil {
+		if _, err := time.Parse("2006-01-02", c.Query("releaseDate")); err != nil && c.Query("releaseDate") != "" {
 			logrus.WithFields(logrus.Fields{
-				"error":         err,
-				"request_query": c.Request.URL.Query(),
+				"error":       err,
+				"releaseDate": c.Query("releaseDate"),
 			}).Error("Failed to parse release date")
 
 			c.JSON(http.StatusBadRequest, domain.ErrorResponse{
@@ -78,13 +76,6 @@ func GetSongs(service application.SongsServiceInterface) gin.HandlerFunc {
 
 		songs, err := service.GetSongs(c, filters, page, size)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error":          err,
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
-			}).Error("Failed to retrieve songs")
-
 			switch err.(type) {
 			case clientErrors.ErrNotFound:
 				c.JSON(http.StatusNotFound, domain.ErrorResponse{
@@ -102,8 +93,7 @@ func GetSongs(service application.SongsServiceInterface) gin.HandlerFunc {
 		}
 
 		logrus.WithFields(logrus.Fields{
-			"request_query": c.Request.URL.Query(),
-			"amount":        len(songs),
+			"amount": len(songs),
 		}).Info("Successfully retrieved songs")
 		c.JSON(http.StatusOK, songs)
 	}
@@ -129,34 +119,19 @@ func GetSongVerses(service application.SongsServiceInterface) gin.HandlerFunc {
 		size, _ := strconv.Atoi(c.DefaultQuery("size", "1"))
 
 		if page < 1 {
-			logrus.WithFields(logrus.Fields{
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
-			}).Warn("page is less than 1, setting to 1")
+			logrus.Warn("page is less than 1, setting to 1")
 
 			page = 1
 		}
 
 		if size < 1 {
-			logrus.WithFields(logrus.Fields{
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
-			}).Warn("size is less than 1, setting to 10")
+			logrus.Warn("size is less than 1, setting to 10")
 
 			size = 10
 		}
 
 		result, err := service.GetSongVerses(c, id, page, size)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error":          err,
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
-			}).Error("Failed to retrieve verses")
-
 			switch err.(type) {
 			case clientErrors.ErrNotFound:
 				c.JSON(http.StatusNotFound, domain.ErrorResponse{
@@ -207,10 +182,8 @@ func DeleteSong(service application.SongsServiceInterface) gin.HandlerFunc {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error":          err,
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
+				"error": err,
+				"id":    c.Param("id"),
 			}).Error("Failed to parse song ID")
 			c.JSON(http.StatusBadRequest, domain.ErrorResponse{
 				Code:    http.StatusBadRequest,
@@ -221,13 +194,6 @@ func DeleteSong(service application.SongsServiceInterface) gin.HandlerFunc {
 
 		err = service.DeleteSong(c, id)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error":          err,
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
-			}).Error("Failed to remove song")
-
 			switch err.(type) {
 			case clientErrors.ErrNotFound:
 				c.JSON(http.StatusNotFound, domain.ErrorResponse{
@@ -245,8 +211,7 @@ func DeleteSong(service application.SongsServiceInterface) gin.HandlerFunc {
 		}
 
 		logrus.WithFields(logrus.Fields{
-			"id":            id,
-			"request_query": c.Request.URL.Query(),
+			"id": id,
 		}).Info("Successfully removed song")
 		c.Status(http.StatusNoContent)
 	}
@@ -269,10 +234,8 @@ func UpdateSong(service application.SongsServiceInterface) gin.HandlerFunc {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error":          err,
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
+				"error": err,
+				"id":    c.Param("id"),
 			}).Error("Failed to parse song ID")
 			c.JSON(http.StatusBadRequest, domain.ErrorResponse{
 				Code:    http.StatusBadRequest,
@@ -286,10 +249,7 @@ func UpdateSong(service application.SongsServiceInterface) gin.HandlerFunc {
 		var song domain.UpdateSongRequest
 		if err := c.BindJSON(&song); err != nil {
 			logrus.WithFields(logrus.Fields{
-				"error":          err,
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
+				"error": err,
 			}).Error("Failed to parse song data")
 			c.JSON(http.StatusBadRequest, domain.ErrorResponse{
 				Code:    http.StatusBadRequest,
@@ -311,13 +271,6 @@ func UpdateSong(service application.SongsServiceInterface) gin.HandlerFunc {
 
 		err = service.UpdateSong(c, &songUpdate)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error":          err,
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
-			}).Error("Failed to update song data")
-
 			switch err.(type) {
 			case clientErrors.ErrNotFound:
 				c.JSON(http.StatusNotFound, domain.ErrorResponse{
@@ -335,8 +288,7 @@ func UpdateSong(service application.SongsServiceInterface) gin.HandlerFunc {
 		}
 
 		logrus.WithFields(logrus.Fields{
-			"song":          song,
-			"request_query": c.Request.URL.Query(),
+			"song": song,
 		}).Info("Successfully updated song")
 		c.JSON(http.StatusOK, song)
 	}
@@ -362,13 +314,6 @@ func AddSong(service application.SongsServiceInterface) gin.HandlerFunc {
 
 		id, err := service.AddSong(c, &req)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error":          err,
-				"request_method": c.Request.Method,
-				"request_path":   c.Request.URL.Path,
-				"request_query":  c.Request.URL.Query(),
-			}).Error("Failed to add song")
-
 			switch err.(type) {
 			case clientErrors.ErrExternal:
 				c.JSON(http.StatusNotFound, domain.ErrorResponse{
@@ -386,8 +331,7 @@ func AddSong(service application.SongsServiceInterface) gin.HandlerFunc {
 		}
 
 		logrus.WithFields(logrus.Fields{
-			"id":            id,
-			"request_query": c.Request.URL.Query(),
+			"id": id,
 		}).Info("Successfully added song")
 		c.JSON(http.StatusCreated, id)
 	}

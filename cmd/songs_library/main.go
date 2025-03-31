@@ -24,6 +24,7 @@ import (
 
 func migrateDB(connectionString string) {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetLevel(logrus.DebugLevel)
 
 	m, err := migrate.New(
 		"file://sql/migrations",
@@ -73,9 +74,11 @@ func main() {
 		logrus.Fatal("Creating external client: ", err)
 	}
 
-	repository := database.NewPgxRepository(pool)
+	songsRepo := database.NewSongsPoolRepository(pool)
+	groupsRepo := database.NewGroupsPoolRepository(pool)
 	service := application.NewSongsService(
-		repository,
+		songsRepo,
+		groupsRepo,
 		externalClient,
 	)
 
