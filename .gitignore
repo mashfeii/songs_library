@@ -9,6 +9,8 @@
 *.dylib
 bin
 
+init.sql
+
 # Test binary, built with `go test -c`
 *.test
 
