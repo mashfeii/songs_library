@@ -4,6 +4,7 @@ import "time"
 
 type Song struct {
 	ID          int       `json:"id"`
+	GroupID     int       `json:"-"`
 	Group       string    `json:"group"`
 	Song        string    `json:"song"`
 	ReleaseDate time.Time `json:"release_date"`
