@@ -7,9 +7,10 @@ resolve-type-alias: false
 disable-version-string: true
 dir: "internal/mocks/"
 packages:
-  github.com/mashfeii/songs_library/internal/domain:
+  github.com/mashfeii/songs_library/internal/infrastructure/database:
     interfaces:
       SongsRepository:
+      GroupsRepository:
   github.com/mashfeii/songs_library/internal/application:
     interfaces:
       SongsServiceInterface:

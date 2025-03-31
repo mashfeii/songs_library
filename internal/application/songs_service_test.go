@@ -16,13 +16,16 @@ import (
 )
 
 func TestSongsService_GetSongs(t *testing.T) {
-	mockRepo := mocks.NewSongsRepositoryMock(t)
-	service := application.NewSongsService(mockRepo, nil)
+	mockSongsRepo := mocks.NewSongsRepositoryMock(t)
+	mockGroupsRepo := mocks.NewGroupsRepositoryMock(t)
+
+	service := application.NewSongsService(mockSongsRepo, mockGroupsRepo, nil)
 
 	t.Run("Success", func(t *testing.T) {
-		mockRepo.On("GetSongs", mock.Anything, mock.Anything, 1, 10).Return([]domain.Song{
+		mockSongsRepo.On("GetSongs", mock.Anything, mock.Anything, 1, 10).Return([]domain.Song{
 			{
 				ID:          1,
+				GroupID:     1,
 				Group:       "Muse",
 				Song:        "Supermassive Black Hole",
 				ReleaseDate: time.Date(2006, 6, 19, 0, 0, 0, 0, time.UTC),
@@ -35,16 +38,16 @@ func TestSongsService_GetSongs(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, songs, 1)
 		assert.Equal(t, "Muse", songs[0].Group)
-		mockRepo.AssertExpectations(t)
+		mockSongsRepo.AssertExpectations(t)
 	})
 
 	t.Run("NoSongsFound", func(t *testing.T) {
-		mockRepo.On("GetSongs", mock.Anything, mock.Anything, 1, 10).Return([]domain.Song{}, nil).Once()
+		mockSongsRepo.On("GetSongs", mock.Anything, mock.Anything, 1, 10).Return([]domain.Song{}, nil).Once()
 
 		songs, err := service.GetSongs(context.Background(), map[string]string{}, 1, 10)
 		assert.Error(t, err)
 		assert.Nil(t, songs)
 		assert.True(t, errors.As(err, &clientErrors.ErrNotFound{}))
-		mockRepo.AssertExpectations(t)
+		mockSongsRepo.AssertExpectations(t)
 	})
 }
